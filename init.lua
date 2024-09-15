@@ -91,7 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.opt`
@@ -122,7 +122,7 @@ end)
 vim.opt.breakindent = true
 
 -- Save undo history
-vim.opt.undofile = true
+vim.opt.undofile = false
 
 -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
 vim.opt.ignorecase = true
@@ -189,6 +189,83 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+-- shell
+if vim.fn.has 'unix' == 1 then
+  vim.opt.shell = '/bin/zsh'
+end
+
+-- auto save
+local autosave_delay = 1000 -- ディレイをミリ秒単位で設定 (ここでは1秒)
+local timer = nil
+
+local function autosave()
+  if vim.bo.modifiable and vim.bo.modified then
+    vim.cmd 'silent! write'
+  end
+end
+
+local function start_autosave()
+  if timer then
+    timer:stop()
+  end
+  timer = vim.defer_fn(autosave, autosave_delay)
+end
+
+vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' }, {
+  pattern = '*',
+  callback = start_autosave,
+})
+
+-- LSPの診断メッセージ設定を変更
+vim.diagnostic.config {
+  virtual_text = true, -- インラインでエラーメッセージを表示
+  update_in_insert = true, -- インサートモード中も診断メッセージを更新
+  severity_sort = true, -- 診断メッセージを重要度順に表示
+}
+
+-- quick fix
+vim.api.nvim_set_keymap('n', '<C-q>', '<cmd>lua vim.lsp.buf.code_action()<CR>', { noremap = true, silent = true })
+
+-- ノーマルモードとビジュアルモードで範囲をヤンクせずに削除する
+vim.api.nvim_set_keymap('n', 'x', '"_d', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', 'x', '"_d', { noremap = true, silent = true })
+
+-- ノーマルモードでTabを使ってインデントを増やす
+vim.api.nvim_set_keymap('n', '<Tab>', '>>', { noremap = true, silent = true })
+
+-- ノーマルモードでShift+Tabを使ってインデントを減らす
+vim.api.nvim_set_keymap('n', '<S-Tab>', '<<', { noremap = true, silent = true })
+
+-- ビジュアルモードでTabを使ってインデントを増やす
+vim.api.nvim_set_keymap('v', '<Tab>', '>gv', { noremap = true, silent = true })
+
+-- ビジュアルモードでShift+Tabを使ってインデントを減らす
+vim.api.nvim_set_keymap('v', '<S-Tab>', '<gv', { noremap = true, silent = true })
+
+-- Telescope live_grep
+vim.api.nvim_set_keymap('n', '<C-g>', '<cmd>Telescope live_grep<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<C-g>', '<cmd>Telescope live_grep<CR>', { noremap = true, silent = true })
+
+-- スペースを使用してインデントする
+vim.o.expandtab = true   -- タブの代わりにスペースを使用
+vim.o.shiftwidth = 4     -- 自動インデントの幅をスペース4つに設定
+
+
+vim.o.encoding = "utf-8"
+vim.o.fileencodings = "utf-8,sjis"
+
+
+-- Jump to diagnostics
+vim.api.nvim_set_keymap('n', '<C-e>', '<cmd>Telescope diagnostics<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<C-e>', '<cmd>Telescope diagnostics<CR>', { noremap = true, silent = true })
+
+vim.api.nvim_set_keymap('n', '<C-n>', '<cmd>lua vim.diagnostic.goto_prev()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<C-p>', '<cmd>lua vim.diagnostic.goto_next()<CR>', { noremap = true, silent = true })
+
+-- popup diagnostics
+vim.api.nvim_set_keymap('n', '<C-p>', '<cmd>lua vim.diagnostic.open_float(nil, { focus=false, scope="cursor", border="rounded", width=60 })<CR>', { noremap = true, silent = true })
+
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -683,7 +760,7 @@ require('lazy').setup({
     },
     opts = {
       notify_on_error = false,
-      format_on_save = function(bufnr)
+      --[[format_on_save = function(bufnr)
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
@@ -698,7 +775,7 @@ require('lazy').setup({
           timeout_ms = 500,
           lsp_format = lsp_format_opt,
         }
-      end,
+      end,]]
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
@@ -777,7 +854,7 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['<CR>'] = cmp.mapping.confirm { select = true },
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
@@ -909,6 +986,51 @@ require('lazy').setup({
     --    - Show your current context: https://github.com/nvim-treesitter/nvim-treesitter-context
     --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
   },
+  {
+    'nvim-tree/nvim-tree.lua',
+    config = function()
+      require 'plugins.nvim-tree'
+    end,
+    requires = { 'nvim-tree/nvim-web-devicons', 'nvim-telescope/telescope.nvim' },
+  },
+  {
+    "MysticalDevil/inlay-hints.nvim",
+    event = "LspAttach",
+    dependencies = { "neovim/nvim-lspconfig" },
+    config = function()
+        require("inlay-hints").setup()
+    end
+  },
+  {
+    'nvim-lualine/lualine.nvim',
+    dependencies = { 'nvim-tree/nvim-web-devicons', opt = true },
+    config = function()
+        require('lualine').setup {
+            sections = {
+                lualine_c = {
+                    'filename',
+                    {
+                        'diagnostics',
+                        sources = { 'nvim_lsp' },
+                        sections = { 'error', 'warn', 'info', 'hint' },
+                        diagnostics_color = {
+                            error = 'DiagnosticError',
+                            warn  = 'DiagnosticWarn',
+                            info  = 'DiagnosticInfo',
+                            hint  = 'DiagnosticHint',
+                        },
+                        symbols = { error = 'E:', warn = 'W:', info = 'I:', hint = 'H:' },
+                        colored = true,
+                        update_in_insert = true,
+                        always_visible = false,
+                    }
+                }
+            }
+        }
+    end
+  },
+
+
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
