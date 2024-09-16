@@ -261,10 +261,47 @@ vim.api.nvim_set_keymap('n', '<C-e>', '<cmd>Telescope diagnostics<CR>', { norema
 vim.api.nvim_set_keymap('v', '<C-e>', '<cmd>Telescope diagnostics<CR>', { noremap = true, silent = true })
 
 vim.api.nvim_set_keymap('n', '<C-n>', '<cmd>lua vim.diagnostic.goto_prev()<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<C-p>', '<cmd>lua vim.diagnostic.goto_next()<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<C-m>', '<cmd>lua vim.diagnostic.goto_next()<CR>', { noremap = true, silent = true })
 
 -- popup diagnostics
 vim.api.nvim_set_keymap('n', '<C-p>', '<cmd>lua vim.diagnostic.open_float(nil, { focus=false, scope="cursor", border="rounded", width=60 })<CR>', { noremap = true, silent = true })
+
+
+-- popup decuments
+_G.open_hover_and_focus = function()
+  vim.lsp.buf.hover()
+
+  -- 少し遅延を入れてウィンドウが開くのを待つ
+  vim.defer_fn(function()
+    -- 現在開いているウィンドウのIDを取得
+    local curr_win = vim.api.nvim_get_current_win()
+
+    -- ウィンドウリストを取得して一番新しく開いたウィンドウを探す
+    local win_list = vim.api.nvim_tabpage_list_wins(0)
+    for _, win in ipairs(win_list) do
+      local conf = vim.api.nvim_win_get_config(win)
+      if conf.focusable and conf.relative ~= "" then
+        -- フォーカス可能な浮動ウィンドウにフォーカスを移動
+        vim.api.nvim_set_current_win(win)
+
+        -- 'Esc' キーでホバーウィンドウを閉じるためのキーマッピングを追加
+        vim.api.nvim_buf_set_keymap(0, 'n', '<Esc>', '<cmd>q<CR>', { noremap = true, silent = true, nowait = true })
+
+        break
+      end
+    end
+
+    -- ホバーウィンドウが閉じられた時に元のウィンドウに戻る
+    vim.cmd('autocmd BufLeave <buffer> ++once lua vim.api.nvim_set_current_win(' .. curr_win .. ')')
+  end, 100)  -- 100msの遅延を設定
+end
+
+-- キーマッピングでホバーを呼び出すように設定
+vim.api.nvim_set_keymap('n', '<S-p>', '<cmd>lua open_hover_and_focus()<CR>', { noremap = true, silent = true })
+
+vim.lsp.handlers["textDocument/hover"] =  vim.lsp.with(vim.lsp.handlers.hover, {
+  border = "rounded",  -- 枠の種類: 'single', 'double', 'rounded', 'solid', 'shadow'
+})
 
 
 -- [[ Basic Autocommands ]]
