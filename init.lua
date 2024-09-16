@@ -195,6 +195,13 @@ if vim.fn.has 'unix' == 1 then
   vim.opt.shell = '/bin/zsh'
 end
 
+if vim.fn.has('win32') == 1 or vim.fn.has('win64') == 1 then
+  vim.opt.shell = 'powershell'
+  vim.opt.shellcmdflag = ''
+  vim.opt.shellquote = ''
+  vim.opt.shellxquote = ''
+end
+
 -- auto save
 local autosave_delay = 1000 -- ディレイをミリ秒単位で設定 (ここでは1秒)
 local timer = nil
