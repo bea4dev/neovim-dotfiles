@@ -208,7 +208,7 @@ local timer = nil
 
 local function autosave()
   if vim.bo.modifiable and vim.bo.modified then
-    vim.cmd 'silent! write'
+    vim.cmd('wa')
   end
 end
 
