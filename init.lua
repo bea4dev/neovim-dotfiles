@@ -1110,20 +1110,8 @@ require('lazy').setup({
           diagnostics = "nvim_lsp",  -- LSPの診断情報を表示
           diagnostics_indicator = function(count, level, diagnostics_dict, context)
             local icon = level:match("error") and " " or " "  -- エラーには""アイコン、警告には""アイコン
-            return " " .. icon .. count  -- 診断アイコンとカウントを表示
+            return icon  -- 診断アイコンを表示
           end,
-          custom_areas = {
-            right = function()
-              local result = {}
-              local signs = vim.b.gitsigns_status_dict
-              if signs then
-                table.insert(result, { text = '  ' .. signs.added, guifg = '#a9ff68' })
-                table.insert(result, { text = '  ' .. signs.changed, guifg = '#ffcf68' })
-                table.insert(result, { text = '  ' .. signs.removed, guifg = '#ff6c6b' })
-              end
-              return result
-            end,
-          }
         }
       }
     end,
