@@ -970,13 +970,19 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      -- vim.cmd.colorscheme 'tokyonight-night'
 
       -- You can configure highlights by doing something like:
-      vim.cmd.hi 'Comment gui=none'
+      -- vim.cmd.hi 'Comment gui=none'
     end,
   },
-
+  {
+    'rebelot/kanagawa.nvim',
+    priority = 1000,
+    init = function()
+      vim.cmd.colorscheme 'kanagawa-dragon'
+    end
+  },
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
@@ -1087,6 +1093,40 @@ require('lazy').setup({
   },
   {
     "tpope/vim-abolish"
+  },
+  {
+    'akinsho/bufferline.nvim',
+    init = function()
+      vim.opt.termguicolors = true
+    end,
+    config = function()
+      require('bufferline').setup {
+        options = {
+          close_command = "bdelete! %d", -- バッファを閉じるコマンド
+          right_mouse_command = "bdelete! %d",
+          left_trunc_marker = '<',
+          right_trunc_marker = '>',
+          separator_style = "slant",  -- "thin", "thick", "slant",
+          diagnostics = "nvim_lsp",  -- LSPの診断情報を表示
+          diagnostics_indicator = function(count, level, diagnostics_dict, context)
+            local icon = level:match("error") and " " or " "  -- エラーには""アイコン、警告には""アイコン
+            return " " .. icon .. count  -- 診断アイコンとカウントを表示
+          end,
+          custom_areas = {
+            right = function()
+              local result = {}
+              local signs = vim.b.gitsigns_status_dict
+              if signs then
+                table.insert(result, { text = '  ' .. signs.added, guifg = '#a9ff68' })
+                table.insert(result, { text = '  ' .. signs.changed, guifg = '#ffcf68' })
+                table.insert(result, { text = '  ' .. signs.removed, guifg = '#ff6c6b' })
+              end
+              return result
+            end,
+          }
+        }
+      }
+    end,
   },
 
 
