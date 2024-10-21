@@ -955,6 +955,57 @@ require('lazy').setup({
           { name = 'luasnip' },
           { name = 'path' },
         },
+        window = {
+          completion = cmp.config.window.bordered(),  -- ボーダー付きの補完メニュー
+          documentation = cmp.config.window.bordered(),  -- ボーダー付きのドキュメントウィンドウ
+        },
+        formatting = {
+          expandable_indicator = true,
+          fields = { "kind", "abbr", "menu" },
+          format = function(entry, vim_item)
+            -- VSCode 風アイコンを設定
+            local kind_icons = {
+              Text = "",  -- Codicons: "Text"
+              Method = "",  -- Codicons: "Method"
+              Function = "",  -- Codicons: "Function"
+              Constructor = "",  -- Codicons: "Constructor"
+              Field = "",  -- Codicons: "Field"
+              Variable = "",  -- Codicons: "Variable"
+              Class = "",  -- Codicons: "Class"
+              Interface = "",  -- Codicons: "Interface"
+              Module = "",  -- Codicons: "Module"
+              Property = "",  -- Codicons: "Property"
+              Unit = "",  -- Codicons: "Unit"
+              Value = "",  -- Codicons: "Value"
+              Enum = "",  -- Codicons: "Enum"
+              Keyword = "",  -- Codicons: "Keyword"
+              Snippet = "",  -- Codicons: "Snippet"
+              Color = "",  -- Codicons: "Color"
+              File = "",  -- Codicons: "File"
+              Reference = "",  -- Codicons: "Reference"
+              Folder = "",  -- Codicons: "Folder"
+              EnumMember = "",  -- Codicons: "EnumMember"
+              Constant = "",  -- Codicons: "Constant"
+              Struct = "",  -- Codicons: "Struct"
+              Event = "",  -- Codicons: "Event"
+              Operator = "",  -- Codicons: "Operator"
+              TypeParameter = "",  -- Codicons: "TypeParameter"
+            }
+
+            -- アイコンを設定
+            vim_item.kind = string.format('%s %s', kind_icons[vim_item.kind], vim_item.kind)
+
+            -- 補完メニューのソース名を表示
+            vim_item.menu = ({
+              nvim_lsp = "[LSP]",
+              luasnip = "[Snippet]",
+              buffer = "[Buffer]",
+              path = "[Path]",
+            })[entry.source.name]
+
+            return vim_item
+          end,
+        },
       }
     end,
   },
@@ -980,7 +1031,28 @@ require('lazy').setup({
     'rebelot/kanagawa.nvim',
     priority = 1000,
     config = function()
+      require('kanagawa').setup({
+        overrides = function(colors)
+          local theme = colors.theme
+          return {
+            Pmenu = { fg = theme.ui.shade0, bg = theme.ui.bg_p1 },  -- add `blend = vim.o.pumblend` to enable transparency
+            PmenuSel = { fg = "NONE", bg = theme.ui.bg_p2 },
+            PmenuSbar = { bg = theme.ui.bg_m1 },
+            PmenuThumb = { bg = theme.ui.bg_p2 },
+
+            CmpItemAbbr = { fg = colors.fujiWhite },
+            CmpItemAbbrMatch = { fg = colors.springGreen, bold = true },
+            CmpItemKindFunction = { fg = colors.crystalBlue },
+            CmpItemKindVariable = { fg = colors.autumnYellow },
+            CmpItemKindKeyword = { fg = colors.peachRed },
+          }
+        end,
+      })
+
       vim.cmd('colorscheme kanagawa-dragon')
+
+      --vim.api.nvim_set_hl(0, "Pmenu", { bg = "#2E3440", fg = "#D8DEE9" })
+      --vim.api.nvim_set_hl(0, "PmenuSel", { bg = "#2E3440", fg = "#ECEFF4" })
     end
   },
   --[[{
