@@ -964,9 +964,9 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
-    priority = 1000, -- Make sure to load this before all the other start plugins.
-    init = function()
+    --'folke/tokyonight.nvim',
+    --priority = 1000, -- Make sure to load this before all the other start plugins.
+    --init = function()
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
@@ -974,15 +974,27 @@ require('lazy').setup({
 
       -- You can configure highlights by doing something like:
       -- vim.cmd.hi 'Comment gui=none'
-    end,
+    --end,
   },
   {
     'rebelot/kanagawa.nvim',
     priority = 1000,
-    init = function()
-      vim.cmd.colorscheme 'kanagawa-dragon'
+    config = function()
+      vim.cmd('colorscheme kanagawa-dragon')
     end
   },
+  --[[{
+    'ellisonleao/gruvbox.nvim',
+    priority = 1000,  -- Gruvboxを優先して読み込む
+    config = function()
+      require('gruvbox').setup({
+        contrast = '',  -- 'hard', 'soft', 'medium' のいずれかを選択
+        transparent_mode = false,  -- trueにすると背景を透明にできる
+      })
+
+      vim.cmd('colorscheme gruvbox')
+    end
+  },]]
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
