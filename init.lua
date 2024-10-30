@@ -1193,7 +1193,7 @@ require('lazy').setup({
           separator_style = "slant",  -- "thin", "thick", "slant",
           diagnostics = "nvim_lsp",  -- LSPの診断情報を表示
           diagnostics_indicator = function(count, level, diagnostics_dict, context)
-            local icon = level:match("error") and " " or " "  -- エラーには""アイコン、警告には""アイコン
+            local icon = level:match("error") and "󰅚 " or "󰀪 "  -- エラーには""アイコン、警告には""アイコン
             return icon  -- 診断アイコンを表示
           end,
         }

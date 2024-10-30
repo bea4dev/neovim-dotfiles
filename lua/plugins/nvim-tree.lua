@@ -31,10 +31,10 @@ require('nvim-tree').setup {
     enable = true,
     show_on_dirs = true, -- フォルダにもエラーステータスを表示
     icons = {
-      hint = 'H',
-      info = 'I',
-      warning = 'W',
-      error = 'E',
+      error = '󰅚 ',
+      warning = '󰀪 ',
+      info = '󰋽 ',
+      hint = '󰌶 ',
     },
   },
 
