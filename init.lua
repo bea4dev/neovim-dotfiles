@@ -314,6 +314,9 @@ vim.lsp.handlers["textDocument/hover"] =  vim.lsp.with(vim.lsp.handlers.hover, {
 vim.keymap.set('n', '<leader>dvo', '<cmd>DiffviewOpen<CR>', { desc = '[D]iff [V]iew [O]pen' })
 vim.keymap.set('n', '<leader>dvc', '<cmd>DiffviewClose<CR>', { desc = '[D]iff [V]iew [C]lose' })
 
+-- toggle term
+vim.keymap.set('n', '<leader>tt', '<cmd>ToggleTerm<CR>', { desc = '[T]oggle [T]erm' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -1205,6 +1208,18 @@ require('lazy').setup({
   },
   {
     'sindrets/diffview.nvim'
+  },
+  {
+    'akinsho/toggleterm.nvim',
+    version = "*",
+    config = function()
+      require("toggleterm").setup{
+        direction = 'float',
+        float_opts = {
+          border = 'curved',
+        },
+      }
+    end
   },
 
 
