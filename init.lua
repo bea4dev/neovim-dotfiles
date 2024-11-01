@@ -310,6 +310,9 @@ vim.lsp.handlers["textDocument/hover"] =  vim.lsp.with(vim.lsp.handlers.hover, {
   border = "rounded",  -- 枠の種類: 'single', 'double', 'rounded', 'solid', 'shadow'
 })
 
+-- diffview
+vim.keymap.set('n', '<leader>dvo', '<cmd>DiffviewOpen<CR>', { desc = '[D]iff [V]iew [O]pen' })
+vim.keymap.set('n', '<leader>dvc', '<cmd>DiffviewClose<CR>', { desc = '[D]iff [V]iew [C]lose' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -1199,6 +1202,9 @@ require('lazy').setup({
         }
       }
     end,
+  },
+  {
+    'sindrets/diffview.nvim'
   },
 
 
