@@ -196,8 +196,8 @@ if vim.fn.has 'unix' == 1 then
 end
 
 if vim.fn.has('win32') == 1 or vim.fn.has('win64') == 1 then
-  vim.opt.shell = 'powershell'
-  vim.opt.shellcmdflag = ''
+  vim.opt.shell = 'pwsh'
+  vim.opt.shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'
   vim.opt.shellquote = ''
   vim.opt.shellxquote = ''
 end
