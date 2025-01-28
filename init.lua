@@ -224,6 +224,8 @@ vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI' }, {
   callback = start_autosave,
 })
 
+vim.o.swapfile = false
+
 -- LSPの診断メッセージ設定を変更
 vim.diagnostic.config {
   virtual_text = true, -- インラインでエラーメッセージを表示
