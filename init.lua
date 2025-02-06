@@ -264,7 +264,6 @@ vim.o.shiftwidth = 4     -- 自動インデントの幅をスペース4つに設
 vim.o.encoding = "utf-8"
 vim.o.fileencodings = "utf-8,sjis"
 
-
 -- Jump to diagnostics
 vim.api.nvim_set_keymap('n', '<C-e>', '<cmd>Telescope diagnostics<CR>', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('v', '<C-e>', '<cmd>Telescope diagnostics<CR>', { noremap = true, silent = true })
@@ -1284,3 +1283,9 @@ for _, method in ipairs({ 'textDocument/diagnostic', 'workspace/diagnostic' }) d
         return default_diagnostic_handler(err, result, context, config)
     end
 end
+
+-- ポップアップウィンドウの透過
+vim.api.nvim_set_hl(0, "NormalFloat", { bg = "NONE" })
+vim.api.nvim_set_hl(0, "FloatBorder", { bg = "NONE" })
+vim.api.nvim_set_hl(0, "LspFloatWinNormal", { bg = "NONE" })
+vim.api.nvim_set_hl(0, "LspFloatWinBorder", { bg = "NONE" })
