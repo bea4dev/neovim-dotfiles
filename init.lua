@@ -195,9 +195,10 @@ if vim.fn.has 'unix' == 1 then
   vim.opt.shell = '/bin/zsh'
 end
 
-if vim.fn.has('win32') == 1 or vim.fn.has('win64') == 1 then
+if vim.fn.has 'win32' == 1 or vim.fn.has 'win64' == 1 then
   vim.opt.shell = 'pwsh'
-  vim.opt.shellcmdflag = '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'
+  vim.opt.shellcmdflag =
+    '-NoLogo -NoProfile -ExecutionPolicy RemoteSigned -Command [Console]::InputEncoding=[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;'
   vim.opt.shellquote = ''
   vim.opt.shellxquote = ''
 end
@@ -208,7 +209,7 @@ local timer = nil
 
 local function autosave()
   if vim.bo.modifiable and vim.bo.modified then
-    vim.cmd('wa')
+    vim.cmd 'wa'
   end
 end
 
@@ -257,12 +258,11 @@ vim.api.nvim_set_keymap('n', '<C-g>', '<cmd>Telescope live_grep<CR>', { noremap 
 vim.api.nvim_set_keymap('v', '<C-g>', '<cmd>Telescope live_grep<CR>', { noremap = true, silent = true })
 
 -- スペースを使用してインデントする
-vim.o.expandtab = true   -- タブの代わりにスペースを使用
-vim.o.shiftwidth = 4     -- 自動インデントの幅をスペース4つに設定
+vim.o.expandtab = true -- タブの代わりにスペースを使用
+vim.o.shiftwidth = 4 -- 自動インデントの幅をスペース4つに設定
 
-
-vim.o.encoding = "utf-8"
-vim.o.fileencodings = "utf-8,sjis"
+vim.o.encoding = 'utf-8'
+vim.o.fileencodings = 'utf-8,sjis'
 
 -- Jump to diagnostics
 vim.api.nvim_set_keymap('n', '<C-e>', '<cmd>Telescope diagnostics<CR>', { noremap = true, silent = true })
@@ -272,12 +272,16 @@ vim.api.nvim_set_keymap('n', '<C-n>', '<cmd>lua vim.diagnostic.goto_prev()<CR>',
 vim.api.nvim_set_keymap('n', '<C-m>', '<cmd>lua vim.diagnostic.goto_next()<CR>', { noremap = true, silent = true })
 
 -- popup diagnostics
-vim.api.nvim_set_keymap('n', '<C-p>', '<cmd>lua vim.diagnostic.open_float(nil, { focus=false, scope="cursor", border="rounded", width=60 })<CR>', { noremap = true, silent = true })
-
+vim.api.nvim_set_keymap(
+  'n',
+  '<C-p>',
+  '<cmd>lua vim.diagnostic.open_float(nil, { focus=false, scope="cursor", border="rounded", width=60 })<CR>',
+  { noremap = true, silent = true }
+)
 
 -- popup decuments
 _G.open_hover_and_focus = function()
-  vim.lsp.buf.hover()
+  vim.lsp.buf.hover({ border = 'rounded' })
 
   -- 少し遅延を入れてウィンドウが開くのを待つ
   vim.defer_fn(function()
@@ -288,7 +292,7 @@ _G.open_hover_and_focus = function()
     local win_list = vim.api.nvim_tabpage_list_wins(0)
     for _, win in ipairs(win_list) do
       local conf = vim.api.nvim_win_get_config(win)
-      if conf.focusable and conf.relative ~= "" then
+      if conf.focusable and conf.relative ~= '' then
         -- フォーカス可能な浮動ウィンドウにフォーカスを移動
         vim.api.nvim_set_current_win(win)
 
@@ -301,15 +305,11 @@ _G.open_hover_and_focus = function()
 
     -- ホバーウィンドウが閉じられた時に元のウィンドウに戻る
     vim.cmd('autocmd BufLeave <buffer> ++once lua vim.api.nvim_set_current_win(' .. curr_win .. ')')
-  end, 100)  -- 100msの遅延を設定
+  end, 200) -- 遅延を設定
 end
 
 -- キーマッピングでホバーを呼び出すように設定
-vim.api.nvim_set_keymap('n', '<S-p>', '<cmd>lua open_hover_and_focus()<CR>', { noremap = true, silent = true })
-
-vim.lsp.handlers["textDocument/hover"] =  vim.lsp.with(vim.lsp.handlers.hover, {
-  border = "rounded",  -- 枠の種類: 'single', 'double', 'rounded', 'solid', 'shadow'
-})
+vim.keymap.set('n', '<S-p>', open_hover_and_focus, { noremap = true, silent = true })
 
 -- diffview
 vim.keymap.set('n', '<leader>dvo', '<cmd>DiffviewOpen<CR>', { desc = '[D]iff [V]iew [O]pen' })
@@ -671,8 +671,8 @@ require('lazy').setup({
             -- Rename の処理
             vim.lsp.buf.rename()
             -- auto save
-            local save = function ()
-              vim.cmd('silent! wa')
+            local save = function()
+              vim.cmd 'silent! wa'
             end
 
             vim.defer_fn(save, 1000)
@@ -767,7 +767,7 @@ require('lazy').setup({
             Lua = {
               completion = {
                 callSnippet = 'Replace',
-                completeopt = 'menu,menuone,noinsert'
+                completeopt = 'menu,menuone,noinsert',
               },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
               -- diagnostics = { disable = { 'missing-fields' } },
@@ -963,40 +963,40 @@ require('lazy').setup({
           { name = 'path' },
         },
         window = {
-          completion = cmp.config.window.bordered(),  -- ボーダー付きの補完メニュー
-          documentation = cmp.config.window.bordered(),  -- ボーダー付きのドキュメントウィンドウ
+          completion = cmp.config.window.bordered(), -- ボーダー付きの補完メニュー
+          documentation = cmp.config.window.bordered(), -- ボーダー付きのドキュメントウィンドウ
         },
         formatting = {
           expandable_indicator = true,
-          fields = { "kind", "abbr", "menu" },
+          fields = { 'kind', 'abbr', 'menu' },
           format = function(entry, vim_item)
             -- VSCode 風アイコンを設定
             local kind_icons = {
-              Text = "",  -- Codicons: "Text"
-              Method = "",  -- Codicons: "Method"
-              Function = "",  -- Codicons: "Function"
-              Constructor = "",  -- Codicons: "Constructor"
-              Field = "",  -- Codicons: "Field"
-              Variable = "",  -- Codicons: "Variable"
-              Class = "",  -- Codicons: "Class"
-              Interface = "",  -- Codicons: "Interface"
-              Module = "",  -- Codicons: "Module"
-              Property = "",  -- Codicons: "Property"
-              Unit = "",  -- Codicons: "Unit"
-              Value = "",  -- Codicons: "Value"
-              Enum = "",  -- Codicons: "Enum"
-              Keyword = "",  -- Codicons: "Keyword"
-              Snippet = "",  -- Codicons: "Snippet"
-              Color = "",  -- Codicons: "Color"
-              File = "",  -- Codicons: "File"
-              Reference = "",  -- Codicons: "Reference"
-              Folder = "",  -- Codicons: "Folder"
-              EnumMember = "",  -- Codicons: "EnumMember"
-              Constant = "",  -- Codicons: "Constant"
-              Struct = "",  -- Codicons: "Struct"
-              Event = "",  -- Codicons: "Event"
-              Operator = "",  -- Codicons: "Operator"
-              TypeParameter = "",  -- Codicons: "TypeParameter"
+              Text = '', -- Codicons: "Text"
+              Method = '', -- Codicons: "Method"
+              Function = '', -- Codicons: "Function"
+              Constructor = '', -- Codicons: "Constructor"
+              Field = '', -- Codicons: "Field"
+              Variable = '', -- Codicons: "Variable"
+              Class = '', -- Codicons: "Class"
+              Interface = '', -- Codicons: "Interface"
+              Module = '', -- Codicons: "Module"
+              Property = '', -- Codicons: "Property"
+              Unit = '', -- Codicons: "Unit"
+              Value = '', -- Codicons: "Value"
+              Enum = '', -- Codicons: "Enum"
+              Keyword = '', -- Codicons: "Keyword"
+              Snippet = '', -- Codicons: "Snippet"
+              Color = '', -- Codicons: "Color"
+              File = '', -- Codicons: "File"
+              Reference = '', -- Codicons: "Reference"
+              Folder = '', -- Codicons: "Folder"
+              EnumMember = '', -- Codicons: "EnumMember"
+              Constant = '', -- Codicons: "Constant"
+              Struct = '', -- Codicons: "Struct"
+              Event = '', -- Codicons: "Event"
+              Operator = '', -- Codicons: "Operator"
+              TypeParameter = '', -- Codicons: "TypeParameter"
             }
 
             -- アイコンを設定
@@ -1004,10 +1004,10 @@ require('lazy').setup({
 
             -- 補完メニューのソース名を表示
             vim_item.menu = ({
-              nvim_lsp = "[LSP]",
-              luasnip = "[Snippet]",
-              buffer = "[Buffer]",
-              path = "[Path]",
+              nvim_lsp = '[LSP]',
+              luasnip = '[Snippet]',
+              buffer = '[Buffer]',
+              path = '[Path]',
             })[entry.source.name]
 
             return vim_item
@@ -1025,25 +1025,25 @@ require('lazy').setup({
     --'folke/tokyonight.nvim',
     --priority = 1000, -- Make sure to load this before all the other start plugins.
     --init = function()
-      -- Load the colorscheme here.
-      -- Like many other themes, this one has different styles, and you could load
-      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      -- vim.cmd.colorscheme 'tokyonight-night'
+    -- Load the colorscheme here.
+    -- Like many other themes, this one has different styles, and you could load
+    -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+    -- vim.cmd.colorscheme 'tokyonight-night'
 
-      -- You can configure highlights by doing something like:
-      -- vim.cmd.hi 'Comment gui=none'
+    -- You can configure highlights by doing something like:
+    -- vim.cmd.hi 'Comment gui=none'
     --end,
   },
   {
     'rebelot/kanagawa.nvim',
     priority = 1000,
     config = function()
-      require('kanagawa').setup({
+      require('kanagawa').setup {
         overrides = function(colors)
           local theme = colors.theme
           return {
-            Pmenu = { fg = theme.ui.shade0, bg = theme.ui.bg_p1 },  -- add `blend = vim.o.pumblend` to enable transparency
-            PmenuSel = { fg = "NONE", bg = theme.ui.bg_p2 },
+            Pmenu = { fg = theme.ui.shade0, bg = theme.ui.bg_p1 }, -- add `blend = vim.o.pumblend` to enable transparency
+            PmenuSel = { fg = 'NONE', bg = theme.ui.bg_p2 },
             PmenuSbar = { bg = theme.ui.bg_m1 },
             PmenuThumb = { bg = theme.ui.bg_p2 },
 
@@ -1054,13 +1054,13 @@ require('lazy').setup({
             CmpItemKindKeyword = { fg = colors.peachRed },
           }
         end,
-      })
+      }
 
-      vim.cmd('colorscheme kanagawa-dragon')
+      vim.cmd 'colorscheme kanagawa-dragon'
 
       --vim.api.nvim_set_hl(0, "Pmenu", { bg = "#2E3440", fg = "#D8DEE9" })
       --vim.api.nvim_set_hl(0, "PmenuSel", { bg = "#2E3440", fg = "#ECEFF4" })
-    end
+    end,
   },
   --[[{
     'ellisonleao/gruvbox.nvim',
@@ -1147,43 +1147,43 @@ require('lazy').setup({
     requires = { 'nvim-tree/nvim-web-devicons', 'nvim-telescope/telescope.nvim' },
   },
   {
-    "MysticalDevil/inlay-hints.nvim",
-    event = "LspAttach",
-    dependencies = { "neovim/nvim-lspconfig" },
+    'MysticalDevil/inlay-hints.nvim',
+    event = 'LspAttach',
+    dependencies = { 'neovim/nvim-lspconfig' },
     config = function()
-        require("inlay-hints").setup()
-    end
+      require('inlay-hints').setup()
+    end,
   },
   {
     'nvim-lualine/lualine.nvim',
     dependencies = { 'nvim-tree/nvim-web-devicons', opt = true },
     config = function()
-        require('lualine').setup {
-            sections = {
-                lualine_c = {
-                    'filename',
-                    {
-                        'diagnostics',
-                        sources = { 'nvim_lsp' },
-                        sections = { 'error', 'warn', 'info', 'hint' },
-                        diagnostics_color = {
-                            error = 'DiagnosticError',
-                            warn  = 'DiagnosticWarn',
-                            info  = 'DiagnosticInfo',
-                            hint  = 'DiagnosticHint',
-                        },
-                        symbols = { error = 'E:', warn = 'W:', info = 'I:', hint = 'H:' },
-                        colored = true,
-                        update_in_insert = true,
-                        always_visible = false,
-                    }
-                }
-            }
-        }
-    end
+      require('lualine').setup {
+        sections = {
+          lualine_c = {
+            'filename',
+            {
+              'diagnostics',
+              sources = { 'nvim_lsp' },
+              sections = { 'error', 'warn', 'info', 'hint' },
+              diagnostics_color = {
+                error = 'DiagnosticError',
+                warn = 'DiagnosticWarn',
+                info = 'DiagnosticInfo',
+                hint = 'DiagnosticHint',
+              },
+              symbols = { error = 'E:', warn = 'W:', info = 'I:', hint = 'H:' },
+              colored = true,
+              update_in_insert = true,
+              always_visible = false,
+            },
+          },
+        },
+      }
+    end,
   },
   {
-    "tpope/vim-abolish"
+    'tpope/vim-abolish',
   },
   {
     'akinsho/bufferline.nvim',
@@ -1193,37 +1193,35 @@ require('lazy').setup({
     config = function()
       require('bufferline').setup {
         options = {
-          close_command = "bdelete! %d", -- バッファを閉じるコマンド
-          right_mouse_command = "bdelete! %d",
+          close_command = 'bdelete! %d', -- バッファを閉じるコマンド
+          right_mouse_command = 'bdelete! %d',
           left_trunc_marker = '<',
           right_trunc_marker = '>',
-          separator_style = "slant",  -- "thin", "thick", "slant",
-          diagnostics = "nvim_lsp",  -- LSPの診断情報を表示
+          separator_style = 'slant', -- "thin", "thick", "slant",
+          diagnostics = 'nvim_lsp', -- LSPの診断情報を表示
           diagnostics_indicator = function(count, level, diagnostics_dict, context)
-            local icon = level:match("error") and "󰅚 " or "󰀪 "  -- エラーには""アイコン、警告には""アイコン
-            return icon  -- 診断アイコンを表示
+            local icon = level:match 'error' and '󰅚 ' or '󰀪 ' -- エラーには""アイコン、警告には""アイコン
+            return icon -- 診断アイコンを表示
           end,
-        }
+        },
       }
     end,
   },
   {
-    'sindrets/diffview.nvim'
+    'sindrets/diffview.nvim',
   },
   {
     'akinsho/toggleterm.nvim',
-    version = "*",
+    version = '*',
     config = function()
-      require("toggleterm").setup{
+      require('toggleterm').setup {
         direction = 'float',
         float_opts = {
           border = 'curved',
         },
       }
-    end
+    end,
   },
-
-
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
@@ -1274,18 +1272,18 @@ require('lazy').setup({
 
 -- for rust_analyzer
 -- https://github.com/neovim/neovim/issues/30985
-for _, method in ipairs({ 'textDocument/diagnostic', 'workspace/diagnostic' }) do
-    local default_diagnostic_handler = vim.lsp.handlers[method]
-    vim.lsp.handlers[method] = function(err, result, context, config)
-        if err ~= nil and err.code == -32802 then
-            return
-        end
-        return default_diagnostic_handler(err, result, context, config)
+for _, method in ipairs { 'textDocument/diagnostic', 'workspace/diagnostic' } do
+  local default_diagnostic_handler = vim.lsp.handlers[method]
+  vim.lsp.handlers[method] = function(err, result, context, config)
+    if err ~= nil and err.code == -32802 then
+      return
     end
+    return default_diagnostic_handler(err, result, context, config)
+  end
 end
 
 -- ポップアップウィンドウの透過
-vim.api.nvim_set_hl(0, "NormalFloat", { bg = "NONE" })
-vim.api.nvim_set_hl(0, "FloatBorder", { bg = "NONE" })
-vim.api.nvim_set_hl(0, "LspFloatWinNormal", { bg = "NONE" })
-vim.api.nvim_set_hl(0, "LspFloatWinBorder", { bg = "NONE" })
+vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
+vim.api.nvim_set_hl(0, 'FloatBorder', { bg = 'NONE' })
+vim.api.nvim_set_hl(0, 'LspFloatWinNormal', { bg = 'NONE' })
+vim.api.nvim_set_hl(0, 'LspFloatWinBorder', { bg = 'NONE' })
