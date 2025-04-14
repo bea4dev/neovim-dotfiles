@@ -1287,3 +1287,19 @@ vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'NONE' })
 vim.api.nvim_set_hl(0, 'FloatBorder', { bg = 'NONE' })
 vim.api.nvim_set_hl(0, 'LspFloatWinNormal', { bg = 'NONE' })
 vim.api.nvim_set_hl(0, 'LspFloatWinBorder', { bg = 'NONE' })
+
+-- Hyprland環境の場合はwl-clipboardを使用する
+if vim.fn.has("linux") == 1 and os.getenv("TERM") == "xterm-kitty" then
+  vim.g.clipboard = {
+    name = 'wl-clipboard',
+    copy = {
+      ['+'] = { 'wl-copy' },
+      ['*'] = { 'wl-copy' },
+    },
+    paste = {
+      ['+'] = { 'wl-paste' },
+      ['*'] = { 'wl-paste' },
+    },
+    cache_enabled = 1,
+  }
+end
