@@ -1034,7 +1034,7 @@ require('lazy').setup({
     -- vim.cmd.hi 'Comment gui=none'
     --end,
   },
-  {
+  --[[{
     'rebelot/kanagawa.nvim',
     priority = 1000,
     config = function()
@@ -1060,6 +1060,23 @@ require('lazy').setup({
 
       --vim.api.nvim_set_hl(0, "Pmenu", { bg = "#2E3440", fg = "#D8DEE9" })
       --vim.api.nvim_set_hl(0, "PmenuSel", { bg = "#2E3440", fg = "#ECEFF4" })
+    end,
+  },]]
+  {
+    'folke/tokyonight.nvim',
+    priority = 1000,
+    config = function()
+      ---@diagnostic disable-next-line: missing-fields
+      require('tokyonight').setup {
+        styles = {
+          comments = { italic = false }, -- Disable italics in comments
+        },
+      }
+
+      -- Load the colorscheme here.
+      -- Like many other themes, this one has different styles, and you could load
+      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
+      vim.cmd.colorscheme 'tokyonight-night'
     end,
   },
   --[[{
