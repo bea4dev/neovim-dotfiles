@@ -281,7 +281,7 @@ vim.api.nvim_set_keymap(
 
 -- popup decuments
 _G.open_hover_and_focus = function()
-  vim.lsp.buf.hover({ border = 'rounded' })
+  vim.lsp.buf.hover { border = 'rounded' }
 
   -- 少し遅延を入れてウィンドウが開くのを待つ
   vim.defer_fn(function()
@@ -1306,7 +1306,7 @@ vim.api.nvim_set_hl(0, 'LspFloatWinNormal', { bg = 'NONE' })
 vim.api.nvim_set_hl(0, 'LspFloatWinBorder', { bg = 'NONE' })
 
 -- Hyprland環境の場合はwl-clipboardを使用する
-if vim.fn.has("linux") == 1 and os.getenv("TERM") == "xterm-kitty" then
+if vim.fn.has 'linux' == 1 and os.getenv 'TERM' == 'xterm-kitty' then
   vim.g.clipboard = {
     name = 'wl-clipboard',
     copy = {
