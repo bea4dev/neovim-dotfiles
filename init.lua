@@ -804,6 +804,68 @@ require('lazy').setup({
           end,
         },
       }
+
+      -- TYML config
+      -- 1) 拡張子→filetype（.tyml は手動で登録）
+      vim.filetype.add({
+        extension = {
+          tyml = "tyml",
+          -- Neovim の .ini 既定は "dosini"。環境により "ini" を使いたいなら↓のコメントを外す
+          -- ini = "ini",
+        },
+      })
+
+      local lspconfig = require("lspconfig")
+      local util = require("lspconfig.util")
+      local configs = require("lspconfig.configs")
+
+      -- 2) 未登録ならカスタムLSPを定義
+      if not configs.tyml then
+        configs.tyml = {
+          default_config = {
+            cmd = (function()
+              local exepath = vim.fn.exepath("tyml-lsp-server")
+              return exepath ~= "" and { exepath, "--stdio" }
+                     or { "/absolute/path/to/tyml-lsp-server", "--stdio" }
+            end)(),
+            -- ← ここで対象 filetype をまとめて指定
+            filetypes = { "tyml", "toml", "json", "dosini", "ini" },
+            root_dir = function(fname)
+              -- 何も無ければファイルのあるディレクトリをルート扱い
+              return util.root_pattern("tyml.toml", "tyml.json", ".git")(fname)
+                  or util.path.dirname(fname)
+            end,
+            single_file_support = true,
+            settings = {},
+          },
+          docs = { description = "Custom LSP for TYML/TOML/INI/JSON." },
+        }
+      end
+
+      lspconfig.tyml.setup({
+        capabilities = (function()
+          local ok, cmp = pcall(require, "cmp_nvim_lsp")
+          return ok and cmp.default_capabilities()
+                 or vim.lsp.protocol.make_client_capabilities()
+        end)(),
+        on_attach = function(client, bufnr)
+          local map = function(mode, lhs, rhs)
+            vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true })
+          end
+          -- map("n", "gd", vim.lsp.buf.definition)
+          -- map("n", "K",  vim.lsp.buf.hover)
+          -- map("n", "gr", vim.lsp.buf.references)
+          -- map("n", "<leader>rn", vim.lsp.buf.rename)
+          -- map("n", "<leader>ca", vim.lsp.buf.code_action)
+          map("n", "<leader>f", function()
+            -- もし jsonls / taplo など他LSPが同時起動しても、このサーバを優先して整形
+            vim.lsp.buf.format({
+              async = true,
+              filter = function(c) return c.name == "tyml" end,
+            })
+          end)
+        end,
+      })
     end,
   },
 
