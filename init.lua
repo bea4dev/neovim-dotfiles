@@ -807,46 +807,54 @@ require('lazy').setup({
 
       -- TYML config
       -- 1) 拡張子→filetype（.tyml は手動で登録）
-      vim.filetype.add({
+      vim.filetype.add {
         extension = {
-          tyml = "tyml",
+          tyml = 'tyml',
           -- Neovim の .ini 既定は "dosini"。環境により "ini" を使いたいなら↓のコメントを外す
           -- ini = "ini",
         },
-      })
+      }
 
-      local lspconfig = require("lspconfig")
-      local util = require("lspconfig.util")
-      local configs = require("lspconfig.configs")
+      local lspconfig = require 'lspconfig'
+      local util = require 'lspconfig.util'
+      local configs = require 'lspconfig.configs'
 
       -- 2) 未登録ならカスタムLSPを定義
       if not configs.tyml then
         configs.tyml = {
           default_config = {
             cmd = (function()
-              local exepath = vim.fn.exepath("tyml-lsp-server")
-              return exepath ~= "" and { exepath, "--stdio" }
-                     or { "/absolute/path/to/tyml-lsp-server", "--stdio" }
+              local candidates = {
+                '/home/bea4dev/Documents/development/tyml/target/debug/tyml-lsp-server',
+                vim.fn.expand '~/.cargo/bin/tyml-lsp-server',
+                vim.fn.exepath 'tyml-lsp-server', -- 最後に PATH から
+              }
+              for _, p in ipairs(candidates) do
+                if p and p ~= '' and vim.fn.executable(p) == 1 then
+                  return { p, '--stdio' }
+                end
+              end
+              -- ここに来たら見つからない
+              vim.notify('[tyml-lsp] tyml-lsp-server が見つかりません。cmd に絶対パスを設定してください。', vim.log.levels.ERROR)
+              return { 'tyml-lsp-server', '--stdio' } -- 空文字にはならない
             end)(),
             -- ← ここで対象 filetype をまとめて指定
-            filetypes = { "tyml", "toml", "json", "dosini", "ini" },
+            filetypes = { 'tyml', 'toml', 'json', 'dosini', 'ini' },
             root_dir = function(fname)
               -- 何も無ければファイルのあるディレクトリをルート扱い
-              return util.root_pattern("tyml.toml", "tyml.json", ".git")(fname)
-                  or util.path.dirname(fname)
+              return util.root_pattern('tyml.toml', 'tyml.json', '.git')(fname) or util.path.dirname(fname)
             end,
             single_file_support = true,
             settings = {},
           },
-          docs = { description = "Custom LSP for TYML/TOML/INI/JSON." },
+          docs = { description = 'Custom LSP for TYML/TOML/INI/JSON.' },
         }
       end
 
-      lspconfig.tyml.setup({
+      lspconfig.tyml.setup {
         capabilities = (function()
-          local ok, cmp = pcall(require, "cmp_nvim_lsp")
-          return ok and cmp.default_capabilities()
-                 or vim.lsp.protocol.make_client_capabilities()
+          local ok, cmp = pcall(require, 'cmp_nvim_lsp')
+          return ok and cmp.default_capabilities() or vim.lsp.protocol.make_client_capabilities()
         end)(),
         on_attach = function(client, bufnr)
           local map = function(mode, lhs, rhs)
@@ -857,15 +865,17 @@ require('lazy').setup({
           -- map("n", "gr", vim.lsp.buf.references)
           -- map("n", "<leader>rn", vim.lsp.buf.rename)
           -- map("n", "<leader>ca", vim.lsp.buf.code_action)
-          map("n", "<leader>f", function()
+          map('n', '<leader>f', function()
             -- もし jsonls / taplo など他LSPが同時起動しても、このサーバを優先して整形
-            vim.lsp.buf.format({
+            vim.lsp.buf.format {
               async = true,
-              filter = function(c) return c.name == "tyml" end,
-            })
+              filter = function(c)
+                return c.name == 'tyml'
+              end,
+            }
           end)
         end,
-      })
+      }
     end,
   },
 
