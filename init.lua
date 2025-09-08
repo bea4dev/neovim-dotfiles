@@ -717,6 +717,33 @@ require('lazy').setup({
             })
           end
 
+          if
+            client
+            and (
+              client.supports_method(vim.lsp.protocol.Methods.textDocument_codeLens)
+              or (client.server_capabilities and client.server_capabilities.codeLensProvider)
+            )
+          then
+            local codelens_group = vim.api.nvim_create_augroup('kickstart-lsp-codelens', { clear = false })
+
+            -- いくつかのタイミングで CodeLens を更新
+            vim.api.nvim_create_autocmd({ 'BufEnter', 'CursorHold', 'InsertLeave' }, {
+              buffer = event.buf,
+              group = codelens_group,
+              callback = function()
+                pcall(vim.lsp.codelens.refresh)
+              end,
+            })
+
+            -- 初回更新
+            pcall(vim.lsp.codelens.refresh)
+
+            -- キーマップ
+            map('<leader>clr', vim.lsp.codelens.run, 'CodeLens: [R]un')
+            map('<leader>clR', vim.lsp.codelens.refresh, 'CodeLens: [R]efresh')
+            map('<leader>clc', vim.lsp.codelens.clear, 'CodeLens: [C]lear')
+          end
+
           -- The following code creates a keymap to toggle inlay hints in your
           -- code, if the language server you are using supports them
           --
@@ -1391,4 +1418,213 @@ if vim.fn.has 'linux' == 1 and os.getenv 'TERM' == 'xterm-kitty' then
     },
     cache_enabled = 1,
   }
+end
+
+-- === TYML CodeLens コマンド: tyml.mock.(serve|send) を Lua 側で実装 ===
+-- CodeLens 側からは arguments = [ file-name, interface-name?, function-name? ] の順で来る前提
+do
+  -- file-name 引数の正規化（"file://..." or "~" をパスに直す）
+  local function normalize_file(x, fallback_bufnr)
+    if type(x) == 'string' then
+      if x:match '^file://' then
+        return vim.uri_to_fname(x)
+      else
+        return vim.fn.expand(x)
+      end
+    elseif type(x) == 'table' and x.uri then
+      return vim.uri_to_fname(x.uri)
+    end
+    return vim.api.nvim_buf_get_name(fallback_bufnr or 0)
+  end
+
+  -- 実コマンド配列を作る
+  local function build_cmd(subcmd, file, iface, func)
+    local cmd = { 'tyml-mock', subcmd, file }
+    if iface and iface ~= '' then
+      table.insert(cmd, iface)
+    end
+    if func and func ~= '' then
+      table.insert(cmd, func)
+    end
+    return cmd
+  end
+
+  -- 一発実行系（send 用）
+  local function run_system(cmd)
+    if vim.system then
+      vim.system(cmd, { text = true }, function(res)
+        vim.schedule(function()
+          if res.code == 0 then
+            vim.notify(('tyml-mock %s OK\n%s'):format(cmd[2], res.stdout or ''), vim.log.levels.INFO)
+          else
+            vim.notify(('tyml-mock %s NG (%d)\n%s'):format(cmd[2], res.code or -1, res.stderr or ''), vim.log.levels.ERROR)
+          end
+        end)
+      end)
+    else
+      local out = {}
+      vim.fn.jobstart(cmd, {
+        stdout_buffered = true,
+        on_stdout = function(_, data)
+          if data then
+            out[#out + 1] = table.concat(data, '\n')
+          end
+        end,
+        on_stderr = function(_, data)
+          if data then
+            out[#out + 1] = table.concat(data, '\n')
+          end
+        end,
+        on_exit = function(_, code)
+          local msg = table.concat(out, '\n')
+          vim.schedule(function()
+            vim.notify((code == 0 and 'tyml-mock send OK\n' or 'tyml-mock send NG\n') .. msg, code == 0 and vim.log.levels.INFO or vim.log.levels.ERROR)
+          end)
+        end,
+      })
+    end
+  end
+
+  -- ロングランの serve は端末分割で起動してログを見やすく
+  local serve_term = { buf = nil, win = nil, chan = nil }
+
+  local function is_running(chan)
+    return chan and vim.fn.jobwait({ chan }, 0)[1] == -1
+  end
+
+  local function open_serve_term(cmd)
+    -- 既に起動中なら再利用 or 再表示
+    if is_running(serve_term.chan) then
+      if serve_term.win and vim.api.nvim_win_is_valid(serve_term.win) then
+        vim.notify('tyml-mock serve は既に起動中です', vim.log.levels.WARN)
+        return
+      end
+      -- ウィンドウが閉じられていたら再表示
+      vim.cmd 'botright 12split'
+      serve_term.win = vim.api.nvim_get_current_win()
+      if serve_term.buf and vim.api.nvim_buf_is_loaded(serve_term.buf) then
+        vim.api.nvim_win_set_buf(serve_term.win, serve_term.buf)
+      else
+        -- バッファが無い/破棄されていたら作り直し（再起動）
+        serve_term.buf = vim.api.nvim_create_buf(false, true) -- [listed=false, scratch]
+        vim.api.nvim_win_set_buf(serve_term.win, serve_term.buf)
+        vim.bo[serve_term.buf].bufhidden = 'hide'
+        vim.bo[serve_term.buf].swapfile = false
+        vim.api.nvim_buf_set_name(serve_term.buf, 'tyml-mock: serve')
+        serve_term.chan = vim.fn.termopen(cmd)
+      end
+      vim.cmd 'startinsert'
+      return
+    end
+
+    -- 新規起動
+    vim.cmd 'botright 12split'
+    serve_term.win = vim.api.nvim_get_current_win()
+
+    -- ★ここがポイント：新しいスクラッチバッファを割り当てる
+    serve_term.buf = vim.api.nvim_create_buf(false, true) -- [listed=false, scratch]
+    vim.api.nvim_win_set_buf(serve_term.win, serve_term.buf)
+    vim.bo[serve_term.buf].bufhidden = 'hide'
+    vim.bo[serve_term.buf].swapfile = false
+    vim.api.nvim_buf_set_name(serve_term.buf, 'tyml-mock: serve')
+
+    serve_term.chan = vim.fn.termopen(cmd)
+    vim.cmd 'startinsert'
+  end
+
+  -- 共通ハンドラ
+  local function handler(subcmd)
+    return function(command, ctx)
+      local args = command.arguments or {}
+      local file = normalize_file(args[1], ctx and ctx.bufnr or 0)
+      local iface = args[2]
+      local func = args[3]
+
+      if not file or file == '' then
+        vim.notify('tyml-mock: file-name がありません', vim.log.levels.ERROR)
+        return
+      end
+
+      -- 必要なら保存してから実行
+      pcall(vim.cmd, 'silent! update')
+
+      local cmd = build_cmd(subcmd, file, iface, func)
+      if subcmd == 'serve' then
+        open_serve_term(cmd)
+      else
+        run_system(cmd)
+      end
+    end
+  end
+
+  -- ★ CodeLens の command.command と一致させる
+  vim.lsp.commands['tyml.mock.serve'] = handler 'serve'
+  vim.lsp.commands['tyml.mock.send'] = handler 'send'
+end
+
+-- CodeLensの位置調整
+-- CodeLens を「対象行の上」に出し、かつ元行のインデントに合わせて横位置を揃える
+do
+  local ns = vim.api.nvim_create_namespace 'kickstart_codelens_above_aligned'
+
+  -- 行の「見た目の」インデント桁数（タブ幅や全角も考慮）を計算
+  local function indent_cols(bufnr, ln)
+    local line = (vim.api.nvim_buf_get_lines(bufnr, ln, ln + 1, true)[1] or '')
+    local leading_ws = line:match '^%s*' or ''
+    return vim.fn.strdisplaywidth(leading_ws)
+  end
+
+  -- 必要なら range の start.character に合わせるモードも用意（ASCII 前提）
+  local ALIGN_MODE = 'indent' -- "indent" | "range"
+  local function align_cols(bufnr, ln, lenses_on_ln)
+    if ALIGN_MODE == 'range' and lenses_on_ln then
+      local min_char
+      for _, l in ipairs(lenses_on_ln) do
+        local c = l.range and l.range.start and l.range.start.character
+        if type(c) == 'number' and (not min_char or c < min_char) then
+          min_char = c
+        end
+      end
+      if min_char and min_char >= 0 then
+        return min_char
+      end
+    end
+    return indent_cols(bufnr, ln)
+  end
+
+  -- 置き換え描画
+  local orig_display = vim.lsp.codelens.display
+  vim.lsp.codelens.display = function(lenses, bufnr, client_id)
+    vim.lsp.codelens.save(lenses, bufnr, client_id)
+    vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
+    if not lenses or vim.tbl_isempty(lenses) then
+      return
+    end
+
+    -- 行毎にまとめる（タイトル配列と元レンズも保持）
+    local grouped = {} -- ln -> { titles={}, lenses={} }
+    for _, l in ipairs(lenses) do
+      local ln = l.range.start.line
+      local title = l.command and l.command.title
+      if title and title ~= '' then
+        local g = grouped[ln] or { titles = {}, lenses = {} }
+        table.insert(g.titles, title)
+        table.insert(g.lenses, l)
+        grouped[ln] = g
+      end
+    end
+
+    for ln, g in pairs(grouped) do
+      local pad = string.rep(' ', align_cols(bufnr, ln, g.lenses))
+      local text = '' .. table.concat(g.titles, '  |  ')
+
+      -- signcolumn/number の右端から開始したいので leftcol=false（必要なら true に）
+      vim.api.nvim_buf_set_extmark(bufnr, ns, ln, 0, {
+        virt_lines = { { { pad, 'Normal' }, { text, 'LspCodeLens' } } },
+        virt_lines_above = true,
+        virt_lines_leftcol = false, -- ← true にするとウィンドウ最左（サイン/番号の左）起点になる
+        hl_mode = 'combine',
+      })
+    end
+  end
 end
