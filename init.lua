@@ -1338,6 +1338,19 @@ require('lazy').setup({
       }
     end,
   },
+  {
+    'OXY2DEV/markview.nvim',
+    lazy = false,
+
+    -- For `nvim-treesitter` users.
+    priority = 49,
+
+    -- For blink.cmp's completion
+    -- source
+    -- dependencies = {
+    --     "saghen/blink.cmp"
+    -- },
+  },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
@@ -1593,7 +1606,6 @@ do
   end
 
   -- 置き換え描画
-  local orig_display = vim.lsp.codelens.display
   vim.lsp.codelens.display = function(lenses, bufnr, client_id)
     vim.lsp.codelens.save(lenses, bufnr, client_id)
     vim.api.nvim_buf_clear_namespace(bufnr, ns, 0, -1)
