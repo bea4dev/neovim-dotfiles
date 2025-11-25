@@ -815,6 +815,8 @@ require('lazy').setup({
       -- for you, so that they are available from within Neovim.
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
+        'ts_ls',
+        'vue_ls',
         'stylua', -- Used to format Lua code
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
@@ -831,6 +833,43 @@ require('lazy').setup({
           end,
         },
       }
+
+      -- Mason で入れた vue-language-server の中に @vue/language-server が入っている
+      local vue_language_server_path = vim.fn.stdpath 'data' .. '/mason/packages/vue-language-server/node_modules/@vue/language-server'
+
+      local ts_filetypes = {
+        'typescript',
+        'javascript',
+        'javascriptreact',
+        'typescriptreact',
+        'vue',
+      }
+
+      local vue_plugin = {
+        name = '@vue/typescript-plugin',
+        location = vue_language_server_path,
+        languages = { 'vue' },
+        configNamespace = 'typescript',
+      }
+
+      -- Neovim 0.11 の新APIを使う
+      -- nvim-lspconfig が持っているサーバー定義に対して「上書き＋拡張」するイメージ
+      vim.lsp.config('ts_ls', {
+        init_options = {
+          hostInfo = 'neovim',
+          plugins = { vue_plugin },
+        },
+        filetypes = ts_filetypes,
+        capabilities = capabilities,
+      })
+
+      vim.lsp.config('vue_ls', {
+        capabilities = capabilities,
+        -- 必要なら settings や root_markers をここに追加
+      })
+
+      -- 上で設定した ts_ls / vue_ls を有効化する
+      vim.lsp.enable { 'ts_ls', 'vue_ls' }
 
       -- TYML config
       -- 1) 拡張子→filetype（.tyml は手動で登録）
