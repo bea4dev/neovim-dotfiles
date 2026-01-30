@@ -1170,9 +1170,19 @@ require('lazy').setup({
           { name = 'luasnip' },
           { name = 'path' },
         },
+        -- window = {
+        --   completion = cmp.config.window.bordered(), -- ボーダー付きの補完メニュー
+        --   documentation = cmp.config.window.bordered(), -- ボーダー付きのドキュメントウィンドウ
+        -- },
         window = {
-          completion = cmp.config.window.bordered(), -- ボーダー付きの補完メニュー
-          documentation = cmp.config.window.bordered(), -- ボーダー付きのドキュメントウィンドウ
+          completion = cmp.config.window.bordered {
+            border = 'rounded',
+            winhighlight = 'Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None',
+          },
+          documentation = cmp.config.window.bordered {
+            border = 'rounded',
+            winhighlight = 'Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None',
+          },
         },
         formatting = {
           expandable_indicator = true,
@@ -1342,7 +1352,7 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     build = ':TSUpdate',
-    main = 'nvim-treesitter.configs', -- Sets main module to use for opts
+    main = 'nvim-treesitter.config', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
       ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
