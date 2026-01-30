@@ -942,6 +942,76 @@ require('lazy').setup({
           end)
         end,
       }
+
+      -- TYML config
+      -- 1) 拡張子→filetype（.tyml は手動で登録）
+      vim.filetype.add {
+        extension = {
+          toyst = 'toyst',
+          -- Neovim の .ini 既定は "dosini"。環境により "ini" を使いたいなら↓のコメントを外す
+          -- ini = "ini",
+        },
+      }
+
+      -- 2) 未登録ならカスタムLSPを定義
+      if not configs.toyst then
+        configs.toyst = {
+          default_config = {
+            cmd = (function()
+              local candidates = {
+                '/home/bea4dev/Documents/development/toyst/target/debug/language_server',
+                vim.fn.expand '~/.cargo/bin/tyml-lsp-server',
+                vim.fn.exepath 'tyml-lsp-server', -- 最後に PATH から
+              }
+              for _, p in ipairs(candidates) do
+                if p and p ~= '' and vim.fn.executable(p) == 1 then
+                  return { p, '--stdio' }
+                end
+              end
+              -- ここに来たら見つからない
+              vim.notify('[tyml-lsp] tyml-lsp-server が見つかりません。cmd に絶対パスを設定してください。', vim.log.levels.ERROR)
+              return { 'tyml-lsp-server', '--stdio' } -- 空文字にはならない
+            end)(),
+            -- ← ここで対象 filetype をまとめて指定
+            filetypes = { 'toyst' },
+            root_dir = function(fname)
+              -- 何も無ければファイルのあるディレクトリをルート扱い
+              return util.root_pattern('tyml.toml', 'tyml.json', '.git')(fname) or util.path.dirname(fname)
+            end,
+            single_file_support = true,
+            settings = {},
+          },
+          docs = { description = 'Custom LSP for TYML/TOML/INI/JSON.' },
+        }
+      end
+
+      lspconfig.toyst.setup {
+        capabilities = (function()
+          local ok, cmp = pcall(require, 'cmp_nvim_lsp')
+          return ok and cmp.default_capabilities() or vim.lsp.protocol.make_client_capabilities()
+        end)(),
+        on_attach = function(client, bufnr)
+          local map = function(mode, lhs, rhs)
+            vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, silent = true })
+          end
+          -- map("n", "gd", vim.lsp.buf.definition)
+          -- map("n", "K",  vim.lsp.buf.hover)
+          -- map("n", "gr", vim.lsp.buf.references)
+          -- map("n", "<leader>rn", vim.lsp.buf.rename)
+          -- map("n", "<leader>ca", vim.lsp.buf.code_action)
+          map('n', '<leader>f', function()
+            -- もし jsonls / taplo など他LSPが同時起動しても、このサーバを優先して整形
+            vim.lsp.buf.format {
+              async = true,
+              filter = function(c)
+                return c.name == 'toyst'
+              end,
+            }
+          end)
+        end,
+      }
+
+
     end,
   },
 
