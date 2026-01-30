@@ -1100,9 +1100,19 @@ require('lazy').setup({
           { name = 'luasnip' },
           { name = 'path' },
         },
+        -- window = {
+        --   completion = cmp.config.window.bordered(), -- ボーダー付きの補完メニュー
+        --   documentation = cmp.config.window.bordered(), -- ボーダー付きのドキュメントウィンドウ
+        -- },
         window = {
-          completion = cmp.config.window.bordered(), -- ボーダー付きの補完メニュー
-          documentation = cmp.config.window.bordered(), -- ボーダー付きのドキュメントウィンドウ
+          completion = cmp.config.window.bordered {
+            border = 'rounded',
+            winhighlight = 'Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None',
+          },
+          documentation = cmp.config.window.bordered {
+            border = 'rounded',
+            winhighlight = 'Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel,Search:None',
+          },
         },
         formatting = {
           expandable_indicator = true,
