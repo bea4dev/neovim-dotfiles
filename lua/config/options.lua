@@ -56,6 +56,8 @@ local function apply_user_hl()
   vim.api.nvim_set_hl(0, "LineNr", { fg = "#b0b0b0" })
   local hint = vim.api.nvim_get_hl(0, { name = "LspInlayHint", link = false })
   vim.api.nvim_set_hl(0, "LspInlayHint", vim.tbl_extend("force", hint, { fg = "#8a90a8", bg = "NONE" }))
+  local comment = vim.api.nvim_get_hl(0, { name = "Comment", link = false })
+  vim.api.nvim_set_hl(0, "Comment", vim.tbl_extend("force", comment, { fg = "#828282" }))
 end
 apply_user_hl()
 vim.api.nvim_create_autocmd("ColorScheme", {
