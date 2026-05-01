@@ -77,6 +77,31 @@ return {
         callback = apply_hl,
       })
 
+      local PAIRS = { ["{"] = "}", ["["] = "]", ["("] = ")" }
+
+      local function smart_pair_split()
+        local pos = vim.api.nvim_win_get_cursor(0)
+        local row, col = pos[1], pos[2]
+        local line = vim.api.nvim_get_current_line()
+        local before = line:sub(col, col)
+        local after = line:sub(col + 1, col + 1)
+        if PAIRS[before] ~= after then return false end
+
+        local indent = line:match("^[ \t]*") or ""
+        local extra = vim.bo.expandtab
+          and string.rep(" ", vim.bo.shiftwidth > 0 and vim.bo.shiftwidth or vim.bo.tabstop)
+          or "\t"
+        local left = line:sub(1, col)
+        local right = line:sub(col + 1)
+        vim.api.nvim_buf_set_lines(0, row - 1, row, false, {
+          left,
+          indent .. extra,
+          indent .. right,
+        })
+        vim.api.nvim_win_set_cursor(0, { row + 1, #indent + #extra })
+        return true
+      end
+
       cmp.setup({
         snippet = {
           expand = function(args)
@@ -104,7 +129,15 @@ return {
           ["<C-f>"] = cmp.mapping.scroll_docs(4),
           ["<C-Space>"] = cmp.mapping.complete(),
           ["<C-e>"] = cmp.mapping.abort(),
-          ["<CR>"] = cmp.mapping.confirm({ select = false }),
+          ["<CR>"] = cmp.mapping(function(fallback)
+            if cmp.visible() then
+              cmp.confirm({ select = true })
+            elseif smart_pair_split() then
+              -- handled
+            else
+              fallback()
+            end
+          end, { "i", "s" }),
         }),
         sources = cmp.config.sources({
           { name = "nvim_lsp" },

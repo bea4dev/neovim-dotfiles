@@ -10,7 +10,9 @@ return {
       vim.g.loaded_netrwPlugin = 1
       vim.api.nvim_create_user_command("Ex", "NvimTreeToggle", {})
     end,
-    opts = {
+    opts = function()
+      return {
+      on_attach = require("util.nvim_tree_actions").on_attach,
       sort = { sorter = "case_sensitive" },
       view = {
         width = 35,
@@ -38,28 +40,28 @@ return {
             git = true,
           },
           glyphs = {
-            default = "",
-            symlink = "",
-            bookmark = "󰆤",
+            default = "\u{f15b}",
+            symlink = "\u{f481}",
+            bookmark = "\u{f01a4}",
             modified = "●",
             folder = {
-              arrow_closed = "",
-              arrow_open = "",
-              default = "",
-              open = "",
-              empty = "",
-              empty_open = "",
-              symlink = "",
-              symlink_open = "",
+              arrow_closed = "\u{f0da}",
+              arrow_open = "\u{f0d7}",
+              default = "\u{f07b}",
+              open = "\u{f07c}",
+              empty = "\u{f114}",
+              empty_open = "\u{f115}",
+              symlink = "\u{f481}",
+              symlink_open = "\u{f482}",
             },
             git = {
-              unstaged = "",
-              staged = "",
-              unmerged = "",
-              renamed = "➜",
-              untracked = "",
-              deleted = "",
-              ignored = "◌",
+              unstaged = "!",
+              staged = "\u{f00c}",
+              unmerged = "\u{f0c5}",
+              renamed = "»",
+              untracked = "?",
+              deleted = "\u{f00d}",
+              ignored = "\u{25cc}",
             },
           },
         },
@@ -86,6 +88,7 @@ return {
         enable = true,
         update_root = false,
       },
-    },
+      }
+    end,
   },
 }

@@ -71,6 +71,11 @@ return {
           map("n", "<leader>ca", vim.lsp.buf.code_action, "Code action")
           map("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end, "Previous diagnostic")
           map("n", "]d", function() vim.diagnostic.jump({ count = 1 }) end, "Next diagnostic")
+
+          local client = vim.lsp.get_client_by_id(ev.data.client_id)
+          if client and client:supports_method("textDocument/inlayHint") then
+            vim.lsp.inlay_hint.enable(true, { bufnr = ev.buf })
+          end
         end,
       })
     end,
