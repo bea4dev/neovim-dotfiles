@@ -21,6 +21,7 @@ return {
         { "<leader>s", group = "Search" },
         { "<leader>r", group = "Rename / Refactor" },
         { "<leader>c", group = "Code" },
+        { "<leader>h", group = "Git Hunk" },
       },
     },
     keys = {
