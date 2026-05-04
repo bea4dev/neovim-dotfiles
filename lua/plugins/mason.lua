@@ -76,6 +76,31 @@ return {
           if client and client:supports_method("textDocument/inlayHint") then
             vim.lsp.inlay_hint.enable(true, { bufnr = ev.buf })
           end
+
+          if client and client:supports_method("textDocument/documentHighlight") then
+            local hl_group = vim.api.nvim_create_augroup(
+              "user-lsp-doc-highlight-" .. ev.buf, { clear = true })
+            vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+              group = hl_group,
+              buffer = ev.buf,
+              callback = vim.lsp.buf.document_highlight,
+            })
+            vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+              group = hl_group,
+              buffer = ev.buf,
+              callback = vim.lsp.buf.clear_references,
+            })
+            vim.api.nvim_create_autocmd("LspDetach", {
+              group = hl_group,
+              buffer = ev.buf,
+              callback = function(detach)
+                if detach.data.client_id == client.id then
+                  vim.lsp.buf.clear_references()
+                  pcall(vim.api.nvim_del_augroup_by_id, hl_group)
+                end
+              end,
+            })
+          end
         end,
       })
     end,
