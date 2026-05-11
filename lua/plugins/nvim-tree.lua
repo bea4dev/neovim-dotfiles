@@ -39,6 +39,7 @@ return {
             folder_arrow = true,
             git = true,
           },
+          diagnostics_placement = "before",
           glyphs = {
             default = "\u{f15b}",
             symlink = "\u{f481}",
@@ -72,7 +73,20 @@ return {
         timeout = 400,
       },
       diagnostics = {
-        enable = false,
+        enable = true,
+        show_on_dirs = true,
+        show_on_open_dirs = true,
+        debounce_delay = 200,
+        severity = {
+          min = vim.diagnostic.severity.HINT,
+          max = vim.diagnostic.severity.ERROR,
+        },
+        icons = {
+          error   = "\u{f0159} ",
+          warning = "\u{f002a} ",
+          info    = "\u{f02fd} ",
+          hint    = "\u{f0336} ",
+        },
       },
       filters = {
         dotfiles = false,
