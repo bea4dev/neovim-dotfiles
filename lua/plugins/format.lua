@@ -1,12 +1,12 @@
 return {
   {
-    "WhoIsSethDaniel/mason-tool-installer.nvim",
+    'WhoIsSethDaniel/mason-tool-installer.nvim',
     dependencies = {
-      "williamboman/mason.nvim",
+      'williamboman/mason.nvim',
     },
     opts = {
       ensure_installed = {
-        "stylua",
+        'stylua',
       },
       auto_update = false,
       run_on_start = true,
@@ -14,13 +14,13 @@ return {
   },
 
   {
-    "stevearc/conform.nvim",
-    event = { "BufWritePre" },
-    cmd = { "ConformInfo" },
+    'stevearc/conform.nvim',
+    event = { 'BufWritePre' },
+    cmd = { 'ConformInfo' },
     opts = {
       notify_on_error = false,
       formatters_by_ft = {
-        lua = { "stylua" },
+        lua = { 'stylua' },
       },
     },
   },

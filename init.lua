@@ -1,5 +1,5 @@
-require("config.options")
-require("config.keymaps")
-require("config.lazy")
-require("config.tyml")
-require("config.autosave")
+require 'config.options'
+require 'config.keymaps'
+require 'config.lazy'
+require 'config.tyml'
+require 'config.autosave'

@@ -1,21 +1,21 @@
 return {
   {
-    "akinsho/toggleterm.nvim",
-    version = "*",
-    cmd = { "ToggleTerm", "TermExec" },
+    'akinsho/toggleterm.nvim',
+    version = '*',
+    cmd = { 'ToggleTerm', 'TermExec' },
     keys = {
-      { "<leader>tt", "<cmd>ToggleTerm<CR>", desc = "Toggle terminal" },
-      { "<Esc><Esc>", [[<C-\><C-n>]], mode = "t", desc = "Exit terminal mode" },
+      { '<leader>tt', '<cmd>ToggleTerm<CR>', desc = 'Toggle terminal' },
+      { '<Esc><Esc>', [[<C-\><C-n>]], mode = 't', desc = 'Exit terminal mode' },
     },
     opts = {
-      direction = "float",
+      direction = 'float',
       float_opts = {
-        border = "curved",
+        border = 'curved',
         winblend = 0,
       },
       highlights = {
-        Normal       = { link = "HoverNormal" },
-        FloatBorder  = { link = "HoverBorder" },
+        Normal = { link = 'HoverNormal' },
+        FloatBorder = { link = 'HoverBorder' },
       },
       shade_terminals = false,
       start_in_insert = true,

@@ -1,11 +1,11 @@
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
 
 local opt = vim.opt
 
 opt.number = true
 opt.relativenumber = false
-opt.signcolumn = "yes"
+opt.signcolumn = 'yes'
 opt.cursorline = true
 
 opt.expandtab = true
@@ -34,42 +34,41 @@ opt.backup = false
 opt.updatetime = 250
 opt.timeoutlen = 300
 
-opt.clipboard = "unnamedplus"
-opt.mouse = "a"
+opt.clipboard = 'unnamedplus'
+opt.mouse = 'a'
 
-if vim.env.WAYLAND_DISPLAY and vim.fn.executable("wl-copy") == 1 then
+if vim.env.WAYLAND_DISPLAY and vim.fn.executable 'wl-copy' == 1 then
   vim.g.clipboard = {
-    name = "wl-clipboard",
+    name = 'wl-clipboard',
     copy = {
-      ["+"] = { "wl-copy" },
-      ["*"] = { "wl-copy", "--primary" },
+      ['+'] = { 'wl-copy' },
+      ['*'] = { 'wl-copy', '--primary' },
     },
     paste = {
-      ["+"] = { "wl-paste", "--no-newline" },
-      ["*"] = { "wl-paste", "--no-newline", "--primary" },
+      ['+'] = { 'wl-paste', '--no-newline' },
+      ['*'] = { 'wl-paste', '--no-newline', '--primary' },
     },
     cache_enabled = 1,
   }
 end
 
 local function apply_user_hl()
-  vim.api.nvim_set_hl(0, "LineNr", { fg = "#b0b0b0" })
-  local hint = vim.api.nvim_get_hl(0, { name = "LspInlayHint", link = false })
-  vim.api.nvim_set_hl(0, "LspInlayHint", vim.tbl_extend("force", hint, { fg = "#8a90a8", bg = "NONE" }))
-  local comment = vim.api.nvim_get_hl(0, { name = "Comment", link = false })
-  vim.api.nvim_set_hl(0, "Comment", vim.tbl_extend("force", comment, { fg = "#828282" }))
-  local unnec = vim.api.nvim_get_hl(0, { name = "DiagnosticUnnecessary", link = false })
-  vim.api.nvim_set_hl(0, "DiagnosticUnnecessary",
-    vim.tbl_extend("force", unnec, { fg = "#9a9a9a" }))
+  vim.api.nvim_set_hl(0, 'LineNr', { fg = '#b0b0b0' })
+  local hint = vim.api.nvim_get_hl(0, { name = 'LspInlayHint', link = false })
+  vim.api.nvim_set_hl(0, 'LspInlayHint', vim.tbl_extend('force', hint, { fg = '#8a90a8', bg = 'NONE' }))
+  local comment = vim.api.nvim_get_hl(0, { name = 'Comment', link = false })
+  vim.api.nvim_set_hl(0, 'Comment', vim.tbl_extend('force', comment, { fg = '#828282' }))
+  local unnec = vim.api.nvim_get_hl(0, { name = 'DiagnosticUnnecessary', link = false })
+  vim.api.nvim_set_hl(0, 'DiagnosticUnnecessary', vim.tbl_extend('force', unnec, { fg = '#9a9a9a' }))
 end
 apply_user_hl()
-vim.api.nvim_create_autocmd("ColorScheme", {
-  group = vim.api.nvim_create_augroup("user-hl", { clear = true }),
+vim.api.nvim_create_autocmd('ColorScheme', {
+  group = vim.api.nvim_create_augroup('user-hl', { clear = true }),
   callback = apply_user_hl,
 })
 
-vim.diagnostic.config({
+vim.diagnostic.config {
   virtual_text = true,
   update_in_insert = true,
   severity_sort = true,
-})
+}
