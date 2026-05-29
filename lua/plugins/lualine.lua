@@ -19,7 +19,7 @@ return {
           "filename",
           {
             "diagnostics",
-            sources = { "nvim_lsp" },
+            sources = { "nvim_diagnostic" },
             sections = { "error", "warn", "info", "hint" },
             diagnostics_color = {
               error = "DiagnosticError",
