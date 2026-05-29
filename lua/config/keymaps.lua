@@ -107,8 +107,13 @@ map({ "n", "v" }, "<C-q>", function()
 end, { desc = "LSP code action" })
 
 map({ "n", "v" }, "<leader>f", function()
-  vim.lsp.buf.format({ async = true })
-end, { desc = "LSP format" })
+  local ok, conform = pcall(require, "conform")
+  if ok then
+    conform.format({ async = true, lsp_format = "fallback" })
+  else
+    vim.lsp.buf.format({ async = true })
+  end
+end, { desc = "Format buffer" })
 
 map("n", "<leader>fr", function()
   require("util.replace_panel").open({ mode = "file" })
