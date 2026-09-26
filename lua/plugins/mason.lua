@@ -1,9 +1,14 @@
+local system_lua_ls = '/run/current-system/sw/bin/lua-language-server'
+
+local use_system_lua_ls = vim.fn.executable(system_lua_ls) == 1
+
 return {
   {
     'williamboman/mason.nvim',
     cmd = 'Mason',
     build = ':MasonUpdate',
     opts = {
+      PATH = 'append',
       ui = {
         border = 'rounded',
         icons = {
@@ -24,9 +29,10 @@ return {
     },
     event = { 'BufReadPre', 'BufNewFile' },
     opts = {
-      ensure_installed = {
-        'lua_ls',
-      },
+      ensure_installed = use_system_lua_ls
+        and {}
+        or { 'lua_ls' },
+    
       automatic_enable = true,
     },
     config = function(_, opts)
@@ -41,6 +47,10 @@ return {
       })
 
       vim.lsp.config('lua_ls', {
+        cmd = use_system_lua_ls
+          and { system_lua_ls }
+          or { 'lua-language-server' },
+      
         settings = {
           Lua = {
             runtime = { version = 'LuaJIT' },
@@ -55,6 +65,10 @@ return {
       })
 
       require('mason-lspconfig').setup(opts)
+
+      if use_system_lua_ls then
+        vim.lsp.enable('lua_ls')
+      end
 
       vim.api.nvim_create_autocmd('LspAttach', {
         group = vim.api.nvim_create_augroup('user-lsp-attach', { clear = true }),
