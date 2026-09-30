@@ -2,6 +2,9 @@ local system_lua_ls = '/run/current-system/sw/bin/lua-language-server'
 
 local use_system_lua_ls = vim.fn.executable(system_lua_ls) == 1
 
+local system_ts_ls = '/run/current-system/sw/bin/typescript-language-server'
+local use_system_ts_ls = vim.fn.executable(system_ts_ls) == 1
+
 return {
   {
     'williamboman/mason.nvim',
@@ -64,10 +67,30 @@ return {
         },
       })
 
+      if use_system_ts_ls then
+        vim.lsp.config('ts_ls', {
+          cmd = function(dispatchers, config)
+            -- Prefer the project's node_modules binary, like the lspconfig default.
+            local cmd = system_ts_ls
+            if (config or {}).root_dir then
+              local local_cmd = vim.fs.joinpath(config.root_dir, 'node_modules/.bin/typescript-language-server')
+              if vim.fn.executable(local_cmd) == 1 then
+                cmd = local_cmd
+              end
+            end
+            return vim.lsp.rpc.start({ cmd, '--stdio' }, dispatchers)
+          end,
+        })
+      end
+
       require('mason-lspconfig').setup(opts)
 
       if use_system_lua_ls then
         vim.lsp.enable('lua_ls')
+      end
+
+      if use_system_ts_ls then
+        vim.lsp.enable 'ts_ls'
       end
 
       vim.api.nvim_create_autocmd('LspAttach', {
